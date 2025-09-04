@@ -1,0 +1,1993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Timetable Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: linear-gradient(135deg, #f8faff 0%, #f1f5f9 100%);
+            color: #1a202c;
+            line-height: 1.6;
+            overflow-x: hidden;
+            padding-top: 90px;
+        }
+
+        /* Enhanced Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes bounceIn {
+            0%, 20%, 40%, 60%, 80% {
+                animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+            }
+            0% {
+                opacity: 0;
+                transform: scale3d(0.3, 0.3, 0.3);
+            }
+            20% {
+                transform: scale3d(1.1, 1.1, 1.1);
+            }
+            40% {
+                transform: scale3d(0.9, 0.9, 0.9);
+            }
+            60% {
+                opacity: 1;
+                transform: scale3d(1.03, 1.03, 1.03);
+            }
+            80% {
+                transform: scale3d(0.97, 0.97, 0.97);
+            }
+            100% {
+                opacity: 1;
+                transform: scale3d(1, 1, 1);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+            }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes slideBackground {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Sticky Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            animation: slideInRight 0.6s ease-out;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: bounceIn 1s ease-out;
+        }
+
+        .brand-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .brand h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 2px;
+        }
+
+        .brand p {
+            color: #718096;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        /* Header Navigation */
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 18px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 20px;
+            border: 1px solid #cbd5e0;
+            color: #2d3748;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease-out 0.3s both;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-btn.admin {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-btn.logout {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white;
+        }
+
+        .nav-btn.logout:hover {
+            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            top: 110px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 210, 255, 0.3);
+            transform: translateX(400px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            max-width: 350px;
+            cursor: pointer;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .toast:hover {
+            transform: translateX(0) scale(1.05);
+        }
+
+        .toast-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .toast-icon {
+            font-size: 1.5rem;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        .toast-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .toast-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.3s;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+            transform: rotate(90deg);
+        }
+
+        .toast-message {
+            font-size: 0.95rem;
+            opacity: 0.95;
+            line-height: 1.4;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        /* Real-time Update Indicator */
+        .update-indicator {
+            position: fixed;
+            top: 110px;
+            left: 20px;
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .update-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Enhanced Stats Grid - Fixed Icon/Percentage Position */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+            background-size: 400% 400%;
+            animation: slideBackground 3s ease infinite;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-15px) scale(1.03);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            transition: all 0.3s ease;
+            margin-left: 15px;
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: rotate(360deg) scale(1.1);
+        }
+
+        .stat-icon.classes { background: linear-gradient(135deg, #ff6b6b, #ee5a52); }
+        .stat-icon.teachers { background: linear-gradient(135deg, #feca57, #ff9ff3); }
+        .stat-icon.subjects { background: linear-gradient(135deg, #48dbfb, #0abde3); }
+        .stat-icon.rooms { background: linear-gradient(135deg, #1dd1a1, #55efc4); }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+            color: #2d3748;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover .stat-number {
+            transform: scale(1.1);
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        /* Fixed positioning for percentage */
+        .stat-trend {
+            position: absolute;
+            top: 50px;
+            right: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .stat-trend.positive {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .stat-card:hover .stat-trend {
+            opacity: 1;
+        }
+
+        .stat-click-hint {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            color: #cbd5e0;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .stat-card:hover .stat-click-hint {
+            opacity: 1;
+            animation: bounceIn 0.5s ease-out;
+        }
+
+        /* Analytics Button */
+        .analytics-trigger {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out 0.5s both;
+        }
+
+        .analytics-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+        }
+
+        .analytics-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 45px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Professional Section Titles */
+        .section-header {
+            margin-bottom: 40px;
+            position: relative;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .section-subtitle {
+            color: #718096;
+            font-size: 1.1rem;
+            font-weight: 400;
+            margin-left: 2px;
+        }
+
+        .section-icon {
+            display: inline-block;
+            margin-right: 12px;
+            font-size: 1.8rem;
+            vertical-align: middle;
+        }
+
+        /* Simplified Classes Section - Removed Stats and Manage Button */
+        .classes-container {
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out 1s both;
+        }
+
+        .classes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .class-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            animation: fadeInUp 0.6s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .class-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #ff6b6b, #feca57);
+            background-size: 300% 100%;
+            animation: slideBackground 4s ease infinite;
+        }
+
+        .class-card:hover {
+            transform: translateY(-8px) rotate(-1deg);
+            border-color: #667eea;
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.15);
+        }
+
+        .class-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #2d3748;
+            text-align: center;
+        }
+
+        .class-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .class-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 18px 25px;
+            border: none;
+            border-radius: 15px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .class-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Logout Confirmation Modal */
+        .logout-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 3000;
+        }
+
+        .logout-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .logout-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.8) rotate(-5deg);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .logout-modal.active .logout-modal-content {
+            transform: scale(1) rotate(0deg);
+        }
+
+        .logout-modal-icon {
+            font-size: 4rem;
+            color: #f56565;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logout-modal-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .logout-modal-message {
+            color: #718096;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .logout-modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .logout-modal-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .logout-modal-btn.confirm {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            color: white;
+        }
+
+        .logout-modal-btn.confirm:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(245, 101, 101, 0.4);
+        }
+
+        .logout-modal-btn.cancel {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+
+        .logout-modal-btn.cancel:hover {
+            background: linear-gradient(135deg, #e2e8f0, #cbd5e0);
+            border-color: #cbd5e0;
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        /* Analytics Modal */
+        .analytics-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+            z-index: 2000;
+        }
+
+        .analytics-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .analytics-modal-content {
+            background: white;
+            border-radius: 25px;
+            padding: 0;
+            max-width: 95%;
+            width: 1200px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.8) rotate(-5deg);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .analytics-modal.active .analytics-modal-content {
+            transform: scale(1) rotate(0deg);
+        }
+
+        .analytics-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 40px;
+            border-radius: 25px 25px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .analytics-modal-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .analytics-modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .analytics-modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.2) rotate(90deg);
+        }
+
+        .analytics-modal-body {
+            padding: 40px;
+        }
+
+        /* Charts Grid in Modal */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .chart-card {
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.12);
+        }
+
+        .chart-header {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .chart-subtitle {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Professional Footer */
+        .footer {
+            margin-top: 60px;
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: white;
+            border-radius: 25px 25px 0 0;
+            overflow: hidden;
+            position: relative;
+            animation: fadeInUp 0.8s ease-out 1.2s both;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #ff6b6b, #feca57);
+            background-size: 400% 400%;
+            animation: slideBackground 3s ease infinite;
+        }
+
+        .footer-content {
+            padding: 50px 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .footer-developer {
+            margin-bottom: 40px;
+        }
+
+        .developer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 25px 35px;
+            border-radius: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .developer-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .developer-badge:hover::before {
+            left: 100%;
+        }
+
+        .developer-badge:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .developer-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .developer-info h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .developer-info p {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .footer-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+            text-align: left;
+        }
+
+        .footer-section h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-section p, .footer-section li {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 12px;
+            padding-left: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .footer-section ul li::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .footer-section ul li:hover {
+            color: rgba(255, 255, 255, 1);
+            transform: translateX(8px);
+        }
+
+        .footer-section ul li:hover::before {
+            transform: rotate(90deg);
+        }
+
+        .contact-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .contact-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 25px;
+            text-align: center;
+        }
+
+        .footer-bottom p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 2000;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.7) rotate(10deg);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1) rotate(0deg);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .modal-close {
+            background: #f56565;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: #e53e3e;
+            transform: scale(1.2) rotate(90deg);
+        }
+
+        .modal-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .modal-stat {
+            text-align: center;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .modal-stat:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .modal-stat-label {
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .modal-list {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .modal-list h4 {
+            margin-bottom: 15px;
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .modal-list ul {
+            list-style: none;
+        }
+
+        .modal-list li {
+            padding: 10px 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .modal-list li:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .no-classes {
+            text-align: center;
+            padding: 80px 40px;
+            background: white;
+            border-radius: 25px;
+            border: 2px dashed #cbd5e0;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            animation: bounceIn 1s ease-out;
+        }
+
+        .no-classes-icon {
+            font-size: 5rem;
+            margin-bottom: 25px;
+            color: #cbd5e0;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .no-classes h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .no-classes p {
+            color: #718096;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 70px;
+            }
+
+            .header-content {
+                padding: 15px 20px;
+            }
+
+            .brand h1 {
+                font-size: 1.3rem;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .classes-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .toast {
+                max-width: 280px;
+                right: 10px;
+            }
+
+            .footer-details {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .developer-badge {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .header-nav {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .analytics-modal-content {
+                width: 95%;
+                max-height: 85vh;
+            }
+
+            .analytics-modal-body {
+                padding: 20px;
+            }
+
+            .logout-modal-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Real-time Update Indicator -->
+    <div class="update-indicator" id="updateIndicator">
+        <i class="fas fa-sync-alt"></i> Updating data...
+    </div>
+
+    <!-- Updated Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div>
+                        <h1>EduCore</h1>
+                        <p>Smart Timetable System</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-nav">
+                <a href="/admin/" class="nav-btn admin" title="Go to Admin Panel">
+                    <i class="fas fa-user-shield"></i>
+                    <span>ADMIN</span>
+                </a>
+                <div class="nav-btn logout" onclick="showLogoutConfirmation()" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>LOGOUT</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Toast Notification -->
+    <div class="toast-container">
+        <div class="toast" id="systemToast">
+            <div class="toast-header">
+                <i class="fas fa-rocket toast-icon"></i>
+                <span class="toast-title">System Online & Ready</span>
+                <button class="toast-close" onclick="closeToast()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="toast-message">
+                Your timetable management system is running perfectly!
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Enhanced Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card" onclick="openStatsModal('classes')" data-type="classes">
+                <div class="stat-trend positive">+12%</div>
+                <div class="stat-click-hint">Click to view details</div>
+                <div class="stat-header">
+                    <div class="stat-content">
+                        <div class="stat-number" id="classesCount">{{ total_classes|default:0 }}</div>
+                        <div class="stat-label">Active Classes</div>
+                    </div>
+                    <div class="stat-icon classes">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card" onclick="openStatsModal('teachers')" data-type="teachers">
+                <div class="stat-trend positive">+5%</div>
+                <div class="stat-click-hint">Click to view details</div>
+                <div class="stat-header">
+                    <div class="stat-content">
+                        <div class="stat-number" id="teachersCount">{{ total_teachers|default:0 }}</div>
+                        <div class="stat-label">Teachers</div>
+                    </div>
+                    <div class="stat-icon teachers">
+                        <i class="fas fa-chalkboard-user"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card" onclick="openStatsModal('subjects')" data-type="subjects">
+                <div class="stat-trend positive">+8%</div>
+                <div class="stat-click-hint">Click to view details</div>
+                <div class="stat-header">
+                    <div class="stat-content">
+                        <div class="stat-number" id="subjectsCount">{{ total_subjects|default:0 }}</div>
+                        <div class="stat-label">Subjects</div>
+                    </div>
+                    <div class="stat-icon subjects">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card" onclick="openStatsModal('rooms')" data-type="rooms">
+                <div class="stat-trend positive">+3%</div>
+                <div class="stat-click-hint">Click to view details</div>
+                <div class="stat-header">
+                    <div class="stat-content">
+                        <div class="stat-number" id="roomsCount">{{ total_rooms|default:0 }}</div>
+                        <div class="stat-label">Rooms</div>
+                    </div>
+                    <div class="stat-icon rooms">
+                        <i class="fas fa-door-open"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Trigger Button -->
+        <div class="analytics-trigger">
+            <button class="analytics-btn" onclick="openAnalyticsModal()">
+                <i class="fas fa-chart-line"></i>
+                <span>View Real-Time Analytics</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- Simplified Classes Section -->
+        <div class="classes-container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-icon">🎯</span>
+                    Class Timetables
+                </h2>
+                <p class="section-subtitle">Quick access to all class schedules</p>
+            </div>
+            {% if classes %}
+                <div class="classes-grid">
+                    {% for class in classes %}
+                        <div class="class-card">
+                            <h3 class="class-name">{{ class.name }}</h3>
+                            <div class="class-badge">Grade {{ class.grade_level }}</div>
+                            <a href="/timetable/class/{{ class.id }}/" class="class-btn">
+                                <i class="fas fa-calendar-alt"></i>
+                                View Schedule
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-classes">
+                    <div class="no-classes-icon">
+                        <i class="fas fa-school"></i>
+                    </div>
+                    <h3>No Classes Yet</h3>
+                    <p>Create your first class to start building professional timetables</p>
+                    <a href="/admin/" class="class-btn">
+                        <i class="fas fa-plus"></i>
+                        Create First Class
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Professional Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-developer">
+                    <div class="developer-badge" onclick="window.open('https://myportfolio-i3gd.onrender.com/', '_blank')">
+                        <div class="developer-avatar">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <div class="developer-info">
+                            <h3>Chinnakotla Sree Harsha</h3>
+                            <p>Data Analyst & Full-Stack Developer</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-details">
+                    <div class="footer-section">
+                        <h4><i class="fas fa-code"></i> Technical Expertise</h4>
+                        <ul>
+                            <li>Python, SQL, Statistical Modeling</li>
+                            <li>Django, Laravel, REST APIs</li>
+                            <li>TensorFlow, NLP, OpenCV</li>
+                            <li>Data Engineering & ETL</li>
+                            <li>JavaScript, React, Vue.js</li>
+                            <li>Machine Learning & AI</li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-section">
+                        <h4><i class="fas fa-envelope"></i> Get In Touch</h4>
+                        <p>Ready to collaborate on innovative projects? Let's connect and create something amazing together.</p>
+                        <a href="https://myportfolio-i3gd.onrender.com/contact/" class="contact-btn" target="_blank">
+                            <i class="fas fa-paper-plane"></i>
+                            Contact Me
+                        </a>
+                        <p style="margin-top: 15px; font-size: 0.9rem;">Available for freelance projects, consultations, and full-time opportunities.</p>
+                    </div>
+
+                    <div class="footer-section">
+                        <h4><i class="fas fa-project-diagram"></i> Specializations</h4>
+                        <ul>
+                            <li>Data Analysis & Visualization</li>
+                            <li>Business Intelligence Solutions</li>
+                            <li>Dashboard Development</li>
+                            <li>Process Automation</li>
+                            <li>Educational Technology</li>
+                            <li>Real-time Applications</li>
+                            <li>API Development</li>
+                            <li>Database Optimization</li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-section">
+                        <h4><i class="fas fa-rocket"></i> Professional Focus</h4>
+                        <ul>
+                            <li>Enterprise Web Applications</li>
+                            <li>Data-Driven Solutions</li>
+                            <li>Performance Optimization</li>
+                            <li>User Experience Design</li>
+                            <li>Scalable Architecture</li>
+                            <li>Quality Assurance</li>
+                            <li>Technical Leadership</li>
+                            <li>Innovation & Research</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="footer-bottom">
+                    <p>© 2024 EduCore Timetable System • Engineered with Excellence by <strong>Chinnakotla Sree Harsha</strong></p>
+                    <p style="margin-top: 8px; font-size: 0.8rem;">Professional-grade solutions for modern educational institutions</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div class="logout-modal" id="logoutModal">
+        <div class="logout-modal-content">
+            <div class="logout-modal-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="logout-modal-title">Confirm Logout</h3>
+            <p class="logout-modal-message">
+                Are you sure you want to logout from the EduCore Timetable System? 
+                You will need to login again to access the dashboard.
+            </p>
+            <div class="logout-modal-buttons">
+                <button class="logout-modal-btn confirm" onclick="confirmLogout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Yes, Logout
+                </button>
+                <button class="logout-modal-btn cancel" onclick="cancelLogout()">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Modal with Real Data -->
+    <div class="analytics-modal" id="analyticsModal">
+        <div class="analytics-modal-content">
+            <div class="analytics-modal-header">
+                <h3 class="analytics-modal-title">
+                    <i class="fas fa-chart-line"></i>
+                    Real-Time Analytics Dashboard
+                </h3>
+                <button class="analytics-modal-close" onclick="closeAnalyticsModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="analytics-modal-body">
+                <div class="charts-grid">
+                    <div class="chart-card" id="weeklyChartCard">
+                        <div class="chart-header">
+                            <div>
+                                <h3 class="chart-title">Weekly Schedule Distribution</h3>
+                                <p class="chart-subtitle">Real classes scheduled per weekday</p>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="weeklyChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card" id="subjectChartCard">
+                        <div class="chart-header">
+                            <div>
+                                <h3 class="chart-title">Subject Distribution</h3>
+                                <p class="chart-subtitle">Live subjects breakdown</p>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="subjectChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card" id="teacherChartCard">
+                        <div class="chart-header">
+                            <div>
+                                <h3 class="chart-title">Teacher Workload</h3>
+                                <p class="chart-subtitle">Real teaching assignments</p>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="teacherChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card" id="roomChartCard">
+                        <div class="chart-header">
+                            <div>
+                                <h3 class="chart-title">Classroom Utilization</h3>
+                                <p class="chart-subtitle">Live room occupancy data</p>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="roomChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Modal -->
+    <div class="modal" id="statsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">
+                    <i class="fas fa-users"></i>
+                    <span>Details</span>
+                </h3>
+                <button class="modal-close" onclick="closeStatsModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="modalBody">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global chart instances
+        let charts = {};
+
+        // Toast notification
+        function showToast() {
+            const toast = document.getElementById('systemToast');
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                closeToast();
+            }, 5000);
+        }
+
+        function closeToast() {
+            const toast = document.getElementById('systemToast');
+            toast.classList.remove('show');
+        }
+
+        // Logout Confirmation
+        function showLogoutConfirmation() {
+            const modal = document.getElementById('logoutModal');
+            modal.classList.add('active');
+        }
+
+        function confirmLogout() {
+            // Redirect to logout URL
+            window.location.href = '/users/logout/';
+        }
+
+        function cancelLogout() {
+            const modal = document.getElementById('logoutModal');
+            modal.classList.remove('active');
+        }
+
+        // Analytics Modal
+        function openAnalyticsModal() {
+            const modal = document.getElementById('analyticsModal');
+            modal.classList.add('active');
+
+            // Initialize charts with real data when modal opens
+            setTimeout(initRealCharts, 100);
+        }
+
+        function closeAnalyticsModal() {
+            const modal = document.getElementById('analyticsModal');
+            modal.classList.remove('active');
+        }
+
+        // Stats modal with dynamic data
+        function openStatsModal(type) {
+            const modal = document.getElementById('statsModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+
+            const icons = {
+                classes: 'fa-users',
+                teachers: 'fa-chalkboard-user',
+                subjects: 'fa-book-open',
+                rooms: 'fa-door-open'
+            };
+
+            const titles = {
+                classes: 'Classes Overview',
+                teachers: 'Teachers Overview',
+                subjects: 'Subjects Overview',
+                rooms: 'Rooms Overview'
+            };
+
+            modalTitle.innerHTML = `<i class="fas ${icons[type]}"></i><span>${titles[type]}</span>`;
+
+            // Dynamic content based on Django template variables
+            let content = '';
+
+            if (type === 'classes') {
+                content = `
+                    <div class="modal-stats">
+                        <div class="modal-stat">
+                            <div class="modal-stat-number">{{ total_classes|default:0 }}</div>
+                            <div class="modal-stat-label">Total Classes</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="modal-stat-number">{{ classes|length }}</div>
+                            <div class="modal-stat-label">Active Classes</div>
+                        </div>
+                    </div>
+                    <div class="modal-list">
+                        <h4>All Classes</h4>
+                        <ul>
+                            {% for class in classes %}
+                            <li>
+                                <span><strong>{{ class.name }}</strong></span>
+                                <span>Grade {{ class.grade_level }}</span>
+                            </li>
+                            {% empty %}
+                            <li><span>No classes found. Add classes from the admin panel.</span></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                `;
+            } else if (type === 'teachers') {
+                content = `
+                    <div class="modal-stats">
+                        <div class="modal-stat">
+                            <div class="modal-stat-number">{{ total_teachers|default:0 }}</div>
+                            <div class="modal-stat-label">Total Teachers</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="modal-stat-number">{{ teachers|length }}</div>
+                            <div class="modal-stat-label">Active Teachers</div>
+                        </div>
+                    </div>
+                    <div class="modal-list">
+                        <h4>Teaching Staff</h4>
+                        <ul>
+                            {% for teacher in teachers %}
+                            <li>
+                                <span><strong>{{ teacher.user.get_full_name|default:teacher.user.username }}</strong></span>
+                                <span>{{ teacher.employee_id|default:"N/A" }}</span>
+                            </li>
+                            {% empty %}
+                            <li><span>No teachers found. Add teachers from the admin panel.</span></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                `;
+            } else if (type === 'subjects') {
+                content = `
+                    <div class="modal-stats">
+                        <div class="modal-stat">
+                            <div class="modal-stat-number">{{ total_subjects|default:0 }}</div>
+                            <div class="modal-stat-label">Total Subjects</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="modal-stat-number">{{ subjects|length }}</div>
+                            <div class="modal-stat-label">Active Subjects</div>
+                        </div>
+                    </div>
+                    <div class="modal-list">
+                        <h4>Subject Catalog</h4>
+                        <ul>
+                            {% for subject in subjects %}
+                            <li>
+                                <span><strong>{{ subject.name }}</strong></span>
+                                <span>{{ subject.code|default:"N/A" }}</span>
+                            </li>
+                            {% empty %}
+                            <li><span>No subjects found. Add subjects from the admin panel.</span></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                `;
+            } else if (type === 'rooms') {
+                content = `
+                    <div class="modal-stats">
+                        <div class="modal-stat">
+                            <div class="modal-stat-number">{{ total_rooms|default:0 }}</div>
+                            <div class="modal-stat-label">Total Rooms</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="modal-stat-number">{{ rooms|length }}</div>
+                            <div class="modal-stat-label">Available Rooms</div>
+                        </div>
+                    </div>
+                    <div class="modal-list">
+                        <h4>Facility Directory</h4>
+                        <ul>
+                            {% for room in rooms %}
+                            <li>
+                                <span><strong>{{ room.name|default:room.room_number }}</strong></span>
+                                <span>{{ room.room_type|default:"Classroom" }}</span>
+                            </li>
+                            {% empty %}
+                            <li><span>No rooms found. Add classrooms from the admin panel.</span></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            modalBody.innerHTML = content;
+            modal.classList.add('active');
+        }
+
+        function closeStatsModal() {
+            const modal = document.getElementById('statsModal');
+            modal.classList.remove('active');
+        }
+
+        // Close modals when clicking outside
+        document.getElementById('statsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeStatsModal();
+            }
+        });
+
+        document.getElementById('analyticsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAnalyticsModal();
+            }
+        });
+
+        document.getElementById('logoutModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cancelLogout();
+            }
+        });
+
+        // Initialize Real Charts with Backend Data
+        function initRealCharts() {
+            // Real data from Django backend
+            const realWeeklyData = [
+                {% for day, count in weekly_schedule_data.items %}
+                    {{ count|default:0 }}{% if not forloop.last %},{% endif %}
+                {% empty %}
+                    0, 0, 0, 0, 0, 0
+                {% endfor %}
+            ];
+
+            const realSubjectData = [
+                {% for subject_name, count in subject_distribution_data.items %}
+                    {{ count|default:0 }}{% if not forloop.last %},{% endif %}
+                {% empty %}
+                    0, 0, 0, 0
+                {% endfor %}
+            ];
+
+            const realSubjectLabels = [
+                {% for subject_name, count in subject_distribution_data.items %}
+                    "{{ subject_name }}"{% if not forloop.last %},{% endif %}
+                {% empty %}
+                    "No Data", "Available", "Subjects", "Found"
+                {% endfor %}
+            ];
+
+            const realTeacherData = [
+                {% for teacher_name, load in teacher_workload_data.items %}
+                    {{ load|default:0 }}{% if not forloop.last %},{% endif %}
+                {% empty %}
+                    0, 0, 0, 0, 0
+                {% endfor %}
+            ];
+
+            const realTeacherLabels = [
+                {% for teacher_name, load in teacher_workload_data.items %}
+                    "{{ teacher_name|truncatechars:15 }}"{% if not forloop.last %},{% endif %}
+                {% empty %}
+                    "No Data", "Available", "For", "Teachers", "Yet"
+                {% endfor %}
+            ];
+
+            const realRoomData = [
+                {% for time, occupancy in room_occupancy_data.items %}
+                    {{ occupancy|default:0 }}{% if not forloop.last %},{% endif %}
+                {% empty %}
+                    0, 0, 0, 0, 0, 0, 0, 0
+                {% endfor %}
+            ];
+
+            // Weekly Schedule Chart with Real Data
+            const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+            charts.weeklyChart = new Chart(weeklyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                    datasets: [{
+                        label: 'Classes Scheduled',
+                        data: realWeeklyData.length > 0 ? realWeeklyData : [0, 0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Subject Distribution Chart with Real Data
+            const subjectCtx = document.getElementById('subjectChart').getContext('2d');
+            charts.subjectChart = new Chart(subjectCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: realSubjectLabels.length > 0 ? realSubjectLabels : ['No Subjects Found'],
+                    datasets: [{
+                        data: realSubjectData.length > 0 ? realSubjectData : [1],
+                        backgroundColor: ['#ff6b6b', '#feca57', '#48dbfb', '#1dd1a1', '#ff9ff3', '#54a0ff'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Teacher Workload Chart with Real Data
+            const teacherCtx = document.getElementById('teacherChart').getContext('2d');
+            charts.teacherChart = new Chart(teacherCtx, {
+                type: 'bar',
+                data: {
+                    labels: realTeacherLabels.length > 0 ? realTeacherLabels : ['No Teachers Found'],
+                    datasets: [{
+                        label: 'Classes Assigned',
+                        data: realTeacherData.length > 0 ? realTeacherData : [0],
+                        backgroundColor: 'rgba(255, 107, 107, 0.8)',
+                        borderColor: 'rgba(255, 107, 107, 1)',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Room Utilization Chart with Real Data
+            const roomCtx = document.getElementById('roomChart').getContext('2d');
+            charts.roomChart = new Chart(roomCtx, {
+                type: 'line',
+                data: {
+                    labels: ['9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM'],
+                    datasets: [{
+                        label: 'Room Occupancy %',
+                        data: realRoomData.length > 0 ? realRoomData : [0, 0, 0, 0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(29, 209, 161, 0.1)',
+                        borderColor: 'rgba(29, 209, 161, 1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(29, 209, 161, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(showToast, 1000);
+        });
+
+        // Close modals on escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (document.getElementById('statsModal').classList.contains('active')) {
+                    closeStatsModal();
+                }
+                if (document.getElementById('analyticsModal').classList.contains('active')) {
+                    closeAnalyticsModal();
+                }
+                if (document.getElementById('logoutModal').classList.contains('active')) {
+                    cancelLogout();
+                }
+                if (document.getElementById('systemToast').classList.contains('show')) {
+                    closeToast();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

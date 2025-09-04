@@ -1,0 +1,44 @@
+<!-- templates/timetable/timeslot_confirm_delete.html -->
+{% extends 'base.html' %}
+
+{% block title %}Delete Time Slot{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 0 auto;">
+    <div class="card-header">
+        <h2 class="card-title">
+            <i class="fas fa-trash" style="color: var(--error-color);"></i>
+            Delete Time Slot
+        </h2>
+    </div>
+
+    <div style="margin: 1rem 0;">
+        <p>Are you sure you want to delete this time slot?</p>
+
+        <div class="alert alert-error" style="margin: 1rem 0;">
+            <strong>{{ object.school_class.name }}</strong><br>
+            {{ object.get_day_of_week_display }} - {{ object.period.name }}<br>
+            {{ object.subject.name }} with {{ object.teacher.user.get_full_name }}<br>
+            Room: {{ object.classroom.name }}
+        </div>
+
+        <p style="color: var(--text-light); font-size: 0.875rem;">
+            This action cannot be undone.
+        </p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="flex justify-between">
+            <a href="{% url 'timetable:grid' class_id=object.school_class.id %}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i>
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash"></i>
+                Yes, Delete
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

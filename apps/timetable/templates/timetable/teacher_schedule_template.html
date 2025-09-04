@@ -1,0 +1,112 @@
+<!-- templates/timetable/teacher_schedule.html -->
+{% extends 'base.html' %}
+
+{% block title %}Teacher Schedule{% endblock %}
+
+{% block content %}
+<!-- Teacher Selection -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h2 class="card-title">Teacher Availability</h2>
+    </div>
+    <div style="padding: 1rem;">
+        <select id="teacherSelector" class="form-control" onchange="selectTeacher()">
+            <option value="">Select Teacher</option>
+            {% for teacher in teachers %}
+                <option value="{{ teacher.id }}" {% if teacher.id == selected_teacher.id %}selected{% endif %}>
+                    {{ teacher.user.get_full_name }} ({{ teacher.employee_id }})
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+{% if selected_teacher %}
+    <!-- Teacher Stats -->
+    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+        <div class="card">
+            <h4 style="font-size: 0.875rem; color: var(--text-light); margin-bottom: 0.5rem;">Total Periods</h4>
+            <p style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">{{ stats.total_periods }}</p>
+        </div>
+        <div class="card">
+            <h4 style="font-size: 0.875rem; color: var(--text-light); margin-bottom: 0.5rem;">Subjects Taught</h4>
+            <p style="font-size: 1.5rem; font-weight: 700; color: var(--success-color);">{{ stats.subjects_taught }}</p>
+        </div>
+        <div class="card">
+            <h4 style="font-size: 0.875rem; color: var(--text-light); margin-bottom: 0.5rem;">Classes Taught</h4>
+            <p style="font-size: 1.5rem; font-weight: 700; color: var(--warning-color);">{{ stats.classes_taught }}</p>
+        </div>
+    </div>
+
+    <!-- Weekly Schedule -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">{{ selected_teacher.user.get_full_name }} - Weekly Schedule</h3>
+        </div>
+
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+            {% for day in days %}
+                <div class="card" style="margin: 0;">
+                    <div class="card-header">
+                        <h4 style="font-size: 1rem; color: var(--primary-color);">
+                            {{ day }}
+                            <span class="badge" style="margin-left: 0.5rem;">
+                                {{ stats.periods_per_day|dict_item:day }} periods
+                            </span>
+                        </h4>
+                    </div>
+
+                    <div>
+                        {% with daily_schedule|dict_item:day as day_slots %}
+                            {% if day_slots %}
+                                {% for slot in day_slots %}
+                                    <div style="padding: 0.75rem; border-bottom: 1px solid #f3f4f6;">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <strong>{{ slot.period.name }}</strong>
+                                                <span style="color: var(--text-light); font-size: 0.75rem;">
+                                                    ({{ slot.period.start_time }}-{{ slot.period.end_time }})
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div style="margin-top: 0.25rem;">
+                                            <span class="badge">{{ slot.subject.name }}</span>
+                                            <span style="color: var(--text-light); font-size: 0.75rem; margin-left: 0.5rem;">
+                                                {{ slot.school_class.name }} • {{ slot.classroom.name }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div style="padding: 2rem; text-align: center; color: var(--text-light);">
+                                    <i class="fas fa-calendar" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                                    <p>No periods assigned</p>
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% else %}
+    <div class="card">
+        <div style="text-align: center; padding: 3rem; color: var(--text-light);">
+            <i class="fas fa-user-tie" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+            <h3>Select a Teacher</h3>
+            <p>Choose a teacher from the dropdown above to view their weekly schedule.</p>
+        </div>
+    </div>
+{% endif %}
+
+<script>
+    function selectTeacher() {
+        const teacherId = document.getElementById('teacherSelector').value;
+        if (teacherId) {
+            window.location.href = `/timetable/teacher/${teacherId}/`;
+        } else {
+            window.location.href = `/timetable/teacher/`;
+        }
+    }
+</script>
+{% endblock %}

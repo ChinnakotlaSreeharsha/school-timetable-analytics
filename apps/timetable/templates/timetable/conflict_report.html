@@ -1,0 +1,53 @@
+<!-- templates/timetable/conflict_report.html -->
+{% extends 'base.html' %}
+
+{% block title %}Conflict Report{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">
+            <i class="fas fa-exclamation-triangle" style="color: var(--error-color);"></i>
+            Scheduling Conflicts Report
+        </h2>
+        <p style="color: var(--text-light); font-size: 0.875rem;">
+            Total Conflicts: {{ total_conflicts }}
+        </p>
+    </div>
+
+    {% if conflicts %}
+        <div style="margin-top: 1rem;">
+            {% for conflict in conflicts %}
+                <div class="alert alert-error" style="margin-bottom: 1rem;">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <strong>{{ conflict.get_conflict_type_display }}</strong>
+                            <p style="margin: 0.25rem 0;">{{ conflict.description }}</p>
+                            <small style="color: var(--text-light);">
+                                Created: {{ conflict.created_at|date:"M d, Y H:i" }}
+                            </small>
+                        </div>
+                        <a href="{% url 'timetable:resolve_conflict' conflict.id %}" class="btn btn-sm btn-success">
+                            <i class="fas fa-check"></i>
+                            Resolve
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 3rem; color: var(--text-light);">
+            <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: 1rem; color: var(--success-color);"></i>
+            <h3>No Conflicts Found</h3>
+            <p>All timetables are properly scheduled without conflicts.</p>
+        </div>
+    {% endif %}
+</div>
+
+<div style="margin-top: 2rem;">
+    <a href="{% url 'timetable:dashboard' %}" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i>
+        Back to Dashboard
+    </a>
+</div>
+{% endblock %}

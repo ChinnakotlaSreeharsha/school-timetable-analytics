@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if selected_class %}{{ selected_class.name }} - Timetable{% else %}Timetable{% endif %} | EduCore</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: linear-gradient(135deg, #f8faff 0%, #f1f5f9 100%);
+            color: #1a202c;
+            line-height: 1.6;
+            overflow-x: hidden;
+            padding-top: 90px;
+            min-height: 100vh;
+        }
+
+        /* Enhanced Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes bounceIn {
+            0%, 20%, 40%, 60%, 80% {
+                animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+            }
+            0% {
+                opacity: 0;
+                transform: scale3d(0.3, 0.3, 0.3);
+            }
+            20% {
+                transform: scale3d(1.1, 1.1, 1.1);
+            }
+            40% {
+                transform: scale3d(0.9, 0.9, 0.9);
+            }
+            60% {
+                opacity: 1;
+                transform: scale3d(1.03, 1.03, 1.03);
+            }
+            80% {
+                transform: scale3d(0.97, 0.97, 0.97);
+            }
+            100% {
+                opacity: 1;
+                transform: scale3d(1, 1, 1);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+            }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes slideBackground {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
+            }
+        }
+
+        /* Sticky Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            animation: slideInRight 0.6s ease-out;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: bounceIn 1s ease-out;
+        }
+
+        .brand-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .brand h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 2px;
+        }
+
+        .brand p {
+            color: #718096;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 20px;
+            border: 1px solid #cbd5e0;
+            color: #2d3748;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-btn.primary:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .page-title h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 12px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .page-title h1::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .page-subtitle {
+            color: #718096;
+            font-size: 1.2rem;
+            font-weight: 400;
+        }
+
+        /* Class Selection Section */
+        .class-selection {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .class-selection h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .class-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .class-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            color: #4a5568;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .class-btn:hover {
+            transform: translateY(-3px);
+            border-color: #667eea;
+            color: #667eea;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .class-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        .class-btn.active:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Status Cards */
+        .status-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .status-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.12);
+        }
+
+        .status-card.info {
+            border-left: 5px solid #3b82f6;
+            background: linear-gradient(135deg, #dbeafe 0%, #f0f9ff 100%);
+        }
+
+        .status-card.success {
+            border-left: 5px solid #10b981;
+            background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
+        }
+
+        .status-card.warning {
+            border-left: 5px solid #f59e0b;
+            background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+        }
+
+        .status-card h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-card.info h3 { color: #1e40af; }
+        .status-card.success h3 { color: #059669; }
+        .status-card.warning h3 { color: #d97706; }
+
+        .status-card p {
+            color: #4b5563;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        /* Timetable Container */
+        .timetable-section {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+            overflow-x: auto;
+        }
+
+        .timetable-header {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .timetable-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .timetable {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 0 1px #e2e8f0;
+        }
+
+        .timetable th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px 12px;
+            font-weight: 700;
+            text-align: center;
+            font-size: 0.95rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .period-header {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
+            font-weight: 700;
+            text-align: left !important;
+            width: 140px;
+            min-width: 140px;
+        }
+
+        .timetable td {
+            border: 1px solid #e2e8f0;
+            padding: 0;
+            vertical-align: top;
+            position: relative;
+            height: 80px;
+            min-height: 80px;
+        }
+
+        .period-header-content {
+            padding: 18px 12px;
+        }
+
+        .period-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .period-time {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        .time-slot {
+            position: relative;
+            height: 80px;
+            min-height: 80px;
+            transition: all 0.3s ease;
+        }
+
+        .time-slot:hover {
+            background: #f8faff;
+            transform: scale(1.02);
+            z-index: 5;
+        }
+
+        .slot-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            margin: 4px;
+            border-radius: 8px;
+            height: calc(100% - 8px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slot-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .slot-content:hover::before {
+            left: 100%;
+        }
+
+        .slot-content:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .subject {
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .teacher, .room {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            margin: 2px 0;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .break-slot {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 12px;
+            margin: 4px;
+            border-radius: 8px;
+            height: calc(100% - 8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-style: italic;
+        }
+
+        .empty-slot {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #9ca3af;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        /* Time Slots List */
+        .slots-section {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out 0.8s both;
+        }
+
+        .slots-section h3 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .slot-card {
+            background: linear-gradient(135deg, #f8faff 0%, #e2e8f0 100%);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #cbd5e0;
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slot-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .slot-card:hover {
+            transform: translateY(-8px) rotate(1deg);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.15);
+            border-left-color: #764ba2;
+        }
+
+        .slot-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .slot-info {
+            color: #4b5563;
+            margin: 8px 0;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .slot-info strong {
+            color: #2d3748;
+            min-width: 80px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out 1s both;
+        }
+
+        .quick-actions h3 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 25px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Professional Footer */
+        .footer {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: white;
+            border-radius: 25px 25px 0 0;
+            overflow: hidden;
+            position: relative;
+            animation: fadeInUp 0.8s ease-out 1.2s both;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #ff6b6b, #feca57);
+            background-size: 400% 400%;
+            animation: slideBackground 3s ease infinite;
+        }
+
+        .footer-content {
+            padding: 50px 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .footer-developer {
+            margin-bottom: 40px;
+        }
+
+        .developer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 25px 35px;
+            border-radius: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .developer-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .developer-badge:hover::before {
+            left: 100%;
+        }
+
+        .developer-badge:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .developer-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .developer-info h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .developer-info p {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 25px;
+            text-align: center;
+        }
+
+        .footer-bottom p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+            background: white;
+            border-radius: 20px;
+            border: 2px dashed #cbd5e0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            animation: bounceIn 1s ease-out;
+        }
+
+        .empty-state-icon {
+            font-size: 5rem;
+            margin-bottom: 25px;
+            color: #cbd5e0;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .empty-state h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            color: #718096;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .empty-state .action-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 70px;
+            }
+
+            .header-content {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .brand h1 {
+                font-size: 1.3rem;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .page-title h1 {
+                font-size: 2rem;
+            }
+
+            .class-buttons {
+                justify-content: center;
+            }
+
+            .status-section {
+                grid-template-columns: 1fr;
+            }
+
+            .slots-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .timetable-section {
+                padding: 20px;
+            }
+
+            .developer-badge {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .timetable {
+                font-size: 0.85rem;
+            }
+
+            .slot-content {
+                padding: 8px;
+            }
+
+            .subject {
+                font-size: 0.8rem;
+            }
+
+            .teacher, .room {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sticky Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div>
+                        <h1>EduCore</h1>
+                        <p>Smart Timetable System</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-nav">
+                <a href="/timetable/" class="nav-btn">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+                <a href="/admin/" class="nav-btn primary">
+                    <i class="fas fa-user-shield"></i>
+                    Admin
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Page Title -->
+        <div class="page-title">
+            <h1>
+                <i class="fas fa-calendar-alt"></i>
+                {% if selected_class %}{{ selected_class.name }} - Timetable{% else %}Class Timetables{% endif %}
+            </h1>
+            <p class="page-subtitle">
+                {% if selected_class %}Weekly schedule and class information{% else %}Select a class to view its weekly schedule{% endif %}
+            </p>
+        </div>
+
+        <!-- Class Selection -->
+        <div class="class-selection">
+            <h3>
+                <i class="fas fa-users"></i>
+                Available Classes
+            </h3>
+            <div class="class-buttons">
+                {% for class in classes %}
+                    <a href="/timetable/class/{{ class.id }}/" class="class-btn {% if selected_class and selected_class.id == class.id %}active{% endif %}">
+                        <i class="fas fa-graduation-cap"></i>
+                        {{ class.name }}
+                    </a>
+                {% empty %}
+                    <p style="color: #718096; font-style: italic;">No classes available. Please add classes in the admin panel.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if selected_class %}
+            <!-- Status Cards -->
+            <div class="status-section">
+                <!-- Class Information -->
+                <div class="status-card info">
+                    <h3>
+                        <i class="fas fa-info-circle"></i>
+                        Class Information
+                    </h3>
+                    <p><strong>Class:</strong> {{ selected_class.name }}</p>
+                    <p><strong>Grade Level:</strong> {{ selected_class.grade_level }}</p>
+                    <p><strong>Total Students:</strong> {{ selected_class.total_students|default:0 }}</p>
+                    <p><strong>Academic Year:</strong> {{ selected_class.academic_year }}</p>
+                    <p><strong>Scheduled Periods:</strong> {{ time_slots|length }}</p>
+                </div>
+
+                <!-- Conflict Status -->
+                {% if conflicts %}
+                    <div class="status-card warning">
+                        <h3>
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Schedule Conflicts
+                        </h3>
+                        <p><strong>{{ conflicts|length }} conflict(s) detected!</strong></p>
+                        <p>Please review and resolve the scheduling conflicts to ensure proper timetable functionality.</p>
+                    </div>
+                {% else %}
+                    <div class="status-card success">
+                        <h3>
+                            <i class="fas fa-check-circle"></i>
+                            Schedule Status
+                        </h3>
+                        <p><strong>No conflicts detected!</strong></p>
+                        <p>Timetable is valid and ready for use. All periods are properly scheduled without overlaps.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Timetable Grid -->
+            {% if time_slots %}
+                <div class="timetable-section">
+                    <div class="timetable-header">
+                        <h2>
+                            <i class="fas fa-table"></i>
+                            Weekly Timetable
+                        </h2>
+                        <p style="color: #718096; margin-top: 8px;">Interactive schedule grid for {{ selected_class.name }}</p>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table class="timetable">
+                            <thead>
+                                <tr>
+                                    <th class="period-header">Period / Day</th>
+                                    {% for day in days %}
+                                        <th>{{ day }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for period in periods %}
+                                    <tr>
+                                        <td class="period-header">
+                                            <div class="period-header-content">
+                                                <div class="period-name">{{ period.name }}</div>
+                                                <div class="period-time">{{ period.start_time }} - {{ period.end_time }}</div>
+                                            </div>
+                                        </td>
+                                        {% for day in days %}
+                                            <td class="time-slot">
+                                                {% if period.is_break %}
+                                                    <div class="break-slot">
+                                                        <i class="fas fa-coffee"></i>
+                                                        {{ period.name }}
+                                                    </div>
+                                                {% else %}
+                                                    <!-- Find matching time slot -->
+                                                    {% with found=False %}
+                                                        {% for slot in time_slots %}
+                                                            {% if slot.day_of_week == day and slot.period.id == period.id %}
+                                                                <div class="slot-content">
+                                                                    <div class="subject">
+                                                                        <i class="fas fa-book"></i>
+                                                                        {{ slot.subject.name }}
+                                                                    </div>
+                                                                    <div class="teacher">
+                                                                        <i class="fas fa-user-tie"></i>
+                                                                        {{ slot.teacher.user.get_full_name|default:slot.teacher.user.username }}
+                                                                    </div>
+                                                                    <div class="room">
+                                                                        <i class="fas fa-door-open"></i>
+                                                                        {{ slot.classroom.name }}
+                                                                    </div>
+                                                                </div>
+                                                                {% with found=True %}{% endwith %}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                        {% if not found %}
+                                                            <div class="empty-slot">
+                                                                <i class="fas fa-clock" style="opacity: 0.5; margin-right: 5px;"></i>
+                                                                Free Period
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% endif %}
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Time Slots List -->
+            <div class="slots-section">
+                <h3>
+                    <i class="fas fa-list-ul"></i>
+                    All Time Slots for {{ selected_class.name }}
+                </h3>
+
+                {% if time_slots %}
+                    <div class="slots-grid">
+                        {% for slot in time_slots %}
+                            <div class="slot-card">
+                                <h4 class="slot-title">
+                                    <i class="fas fa-calendar-day"></i>
+                                    {{ slot.day_of_week }} - {{ slot.period.name }}
+                                </h4>
+                                <div class="slot-info">
+                                    <i class="fas fa-book"></i>
+                                    <strong>Subject:</strong> {{ slot.subject.name }}
+                                </div>
+                                <div class="slot-info">
+                                    <i class="fas fa-user-tie"></i>
+                                    <strong>Teacher:</strong> {{ slot.teacher.user.get_full_name|default:slot.teacher.user.username }}
+                                </div>
+                                <div class="slot-info">
+                                    <i class="fas fa-door-open"></i>
+                                    <strong>Room:</strong> {{ slot.classroom.name }}
+                                </div>
+                                <div class="slot-info">
+                                    <i class="fas fa-clock"></i>
+                                    <strong>Time:</strong> {{ slot.period.start_time }} - {{ slot.period.end_time }}
+                                </div>
+                                {% if slot.notes %}
+                                    <div class="slot-info">
+                                        <i class="fas fa-sticky-note"></i>
+                                        <strong>Notes:</strong> {{ slot.notes }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-calendar-times"></i>
+                        </div>
+                        <h3>No Time Slots Found</h3>
+                        <p>This class doesn't have any scheduled time slots yet. Add time slots in the admin panel to create the timetable.</p>
+                        <a href="/admin/timetable/timeslot/" class="action-btn">
+                            <i class="fas fa-plus"></i>
+                            Add Time Slots
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+        {% else %}
+            <!-- No Class Selected -->
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h3>Select a Class to View Timetable</h3>
+                <p>Choose a class from the buttons above to see its weekly schedule and detailed time slots.</p>
+
+                {% if not classes %}
+                    <p style="margin-top: 20px;"><strong>No classes found.</strong> Please add classes in the admin panel first.</p>
+                    <a href="/admin/timetable/class/" class="action-btn" style="margin-top: 20px;">
+                        <i class="fas fa-plus"></i>
+                        Add Classes
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h3>
+                <i class="fas fa-bolt"></i>
+                Quick Actions
+            </h3>
+            <div class="action-buttons">
+                <a href="/admin/timetable/timeslot/" class="action-btn">
+                    <i class="fas fa-plus"></i>
+                    Add Time Slots
+                </a>
+                <a href="/admin/timetable/class/" class="action-btn">
+                    <i class="fas fa-users"></i>
+                    Manage Classes
+                </a>
+                <a href="/admin/timetable/teacher/" class="action-btn">
+                    <i class="fas fa-user-tie"></i>
+                    Manage Teachers
+                </a>
+                <a href="/admin/timetable/subject/" class="action-btn">
+                    <i class="fas fa-book-open"></i>
+                    Manage Subjects
+                </a>
+                <a href="/admin/timetable/classroom/" class="action-btn">
+                    <i class="fas fa-door-open"></i>
+                    Manage Rooms
+                </a>
+            </div>
+        </div>
+
+        <!-- Professional Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-developer">
+                    <div class="developer-badge" onclick="window.open('https://myportfolio-i3gd.onrender.com/', '_blank')">
+                        <div class="developer-avatar">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <div class="developer-info">
+                            <h3>Chinnakotla Sree Harsha</h3>
+                            <p>Data Analyst & Full-Stack Developer</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-bottom">
+                    <p>© 2024 EduCore Timetable System • Crafted with ❤️ by <strong>Chinnakotla Sree Harsha</strong></p>
+                    <p style="margin-top: 8px; font-size: 0.8rem;">Professional timetable management for educational institutions</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

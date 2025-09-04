@@ -1,0 +1,201 @@
+<!-- templates/timetable/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - School Timetable{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+    <div class="card">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-sm font-semibold text-secondary">Total Classes</h3>
+                <p style="font-size: 2rem; font-weight: 700; color: var(--primary-color);">{{ total_classes }}</p>
+            </div>
+            <div style="color: var(--primary-color); font-size: 2rem;">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-sm font-semibold text-secondary">Total Teachers</h3>
+                <p style="font-size: 2rem; font-weight: 700; color: var(--success-color);">{{ total_teachers }}</p>
+            </div>
+            <div style="color: var(--success-color); font-size: 2rem;">
+                <i class="fas fa-chalkboard-user"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-sm font-semibold text-secondary">Total Subjects</h3>
+                <p style="font-size: 2rem; font-weight: 700; color: var(--warning-color);">{{ total_subjects }}</p>
+            </div>
+            <div style="color: var(--warning-color); font-size: 2rem;">
+                <i class="fas fa-book"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-sm font-semibold text-secondary">Total Rooms</h3>
+                <p style="font-size: 2rem; font-weight: 700; color: var(--error-color);">{{ total_rooms }}</p>
+            </div>
+            <div style="color: var(--error-color); font-size: 2rem;">
+                <i class="fas fa-door-open"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation Tabs -->
+<nav class="nav-tabs">
+    <ul class="nav-tabs-list">
+        <li class="nav-tab active" onclick="showTab('overview')">
+            <i class="fas fa-chart-line"></i>
+            Overview
+        </li>
+        <li class="nav-tab" onclick="showTab('conflicts')">
+            <i class="fas fa-exclamation-triangle"></i>
+            Conflicts ({{ recent_conflicts|length }})
+        </li>
+        <li class="nav-tab" onclick="showTab('quick-actions')">
+            <i class="fas fa-bolt"></i>
+            Quick Actions
+        </li>
+    </ul>
+</nav>
+
+<!-- Tab Content -->
+<div style="margin-top: 2rem;">
+    <!-- Overview Tab -->
+    <div id="overview-tab" class="tab-content">
+        <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div class="card">
+                <h3 class="card-title">System Status</h3>
+                {% if recent_conflicts %}
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        {{ recent_conflicts|length }} unresolved conflict(s) detected
+                    </div>
+                {% else %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        No conflicts detected. System is running smoothly!
+                    </div>
+                {% endif %}
+
+                <div style="margin-top: 1rem;">
+                    <h4 style="font-size: 1rem; margin-bottom: 0.5rem;">Quick Stats</h4>
+                    <ul style="list-style: none; space: 0.5rem;">
+                        <li style="margin-bottom: 0.25rem;">
+                            <i class="fas fa-calendar"></i> 
+                            Academic Year: 2024-2025
+                        </li>
+                        <li style="margin-bottom: 0.25rem;">
+                            <i class="fas fa-clock"></i> 
+                            7 Periods per day
+                        </li>
+                        <li style="margin-bottom: 0.25rem;">
+                            <i class="fas fa-calendar-week"></i> 
+                            6 Working days
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Recent Activity</h3>
+                <div style="color: var(--text-light); font-size: 0.875rem;">
+                    <p>Welcome to the School Timetable Dashboard!</p>
+                    <p>Select a class from the header to view its timetable.</p>
+                    <br>
+                    <p><strong>Getting Started:</strong></p>
+                    <ul style="margin-left: 1rem;">
+                        <li>Admin users can create and edit time slots</li>
+                        <li>Teachers can view their schedules</li>
+                        <li>Students can view class timetables</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conflicts Tab -->
+    <div id="conflicts-tab" class="tab-content hidden">
+        <div class="card">
+            <h3 class="card-title">Recent Conflicts</h3>
+            {% if recent_conflicts %}
+                <div style="margin-top: 1rem;">
+                    {% for conflict in recent_conflicts %}
+                        <div class="alert alert-error" style="margin-bottom: 0.5rem;">
+                            <div>
+                                <strong>{{ conflict.get_conflict_type_display }}</strong>
+                                <p style="margin: 0; font-size: 0.875rem;">{{ conflict.description }}</p>
+                                <small style="color: var(--text-light);">{{ conflict.created_at|date:"M d, Y H:i" }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <a href="{% url 'timetable:conflicts' %}" class="btn btn-primary">
+                        View All Conflicts
+                    </a>
+                </div>
+            {% else %}
+                <p style="color: var(--text-light); margin-top: 1rem;">No recent conflicts found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Actions Tab -->
+    <div id="quick-actions-tab" class="tab-content hidden">
+        <div class="card">
+            <h3 class="card-title">Quick Actions</h3>
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <a href="{% url 'admin:index' %}" class="btn btn-primary">
+                    <i class="fas fa-cog"></i>
+                    Admin Panel
+                </a>
+                <a href="#" class="btn btn-outline">
+                    <i class="fas fa-plus"></i>
+                    Add New Class
+                </a>
+                <a href="#" class="btn btn-outline">
+                    <i class="fas fa-user-plus"></i>
+                    Add Teacher
+                </a>
+                <a href="#" class="btn btn-outline">
+                    <i class="fas fa-door-open"></i>
+                    Add Classroom
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+
+        // Remove active class from all nav tabs
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+
+        // Show selected tab
+        document.getElementById(tabName + '-tab').classList.remove('hidden');
+
+        // Add active class to clicked nav tab
+        event.target.closest('.nav-tab').classList.add('active');
+    }
+</script>
+{% endblock %}
